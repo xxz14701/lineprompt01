@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>貼圖咒語小幫手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: #f0f9ff;
+            color: #1f2937;
+        }
+
+        .step-card {
+            background-color: #ffffff;
+            border: 2px solid #bae6fd;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .step-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #0369a1;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-option {
+            font-size: 1.15rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+            font-weight: 500;
+            margin: 0.25rem;
+            cursor: pointer;
+        }
+        
+        .btn-active {
+            background-color: #0ea5e9;
+            color: white;
+            border-color: #0369a1;
+            box-shadow: 0 2px 4px rgba(14, 165, 233, 0.4);
+        }
+
+        .btn-mode {
+            flex: 1;
+            padding: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 1rem;
+            border: 3px solid #e5e7eb;
+            background: white;
+            color: #4b5563;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-mode.active {
+            border-color: #0ea5e9;
+            background-color: #f0f9ff;
+            color: #0ea5e9;
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+        }
+
+        .prompt-preview {
+            background-color: #f3f4f6;
+            color: #4b5563;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-size: 0.9rem;
+            height: 150px;
+            overflow-y: auto;
+            border: 1px dashed #9ca3af;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const Icon = ({ children, className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`${className || ''}`} {...props}>{children}</svg>
+        );
+        const IconCheck = (props) => <Icon {...props}><polyline points="20 6 9 17 4 12"/></Icon>;
+        const IconMagic = (props) => <Icon {...props}><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></Icon>;
+        const IconCopy = (props) => <Icon {...props}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></Icon>;
+        const IconType = (props) => <Icon {...props}><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></Icon>;
+        const IconImage = (props) => <Icon {...props}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></Icon>;
+
+        const PROMPT_THEMES = {
+            daily: { label: '🏠 日常問候', texts: '早安、謝謝、OK、哈哈、晚安、讚、好棒、吃飽沒、Hi、沒問題、好喔、生日快樂' },
+            greet: { label: '👋 打招呼', texts: '收到、平安、日安、路上小心、辛苦了、注意保暖、記得帶傘、 掰掰、愛你、感謝你、拜託、早點休息'},
+            response: { label: '💬 回應用語', texts: '加油、你可以的、一定沒問題的、我覺得可以、我覺得不行、我很厲害吧、什麼什麼什麼、求求你啦、不用客氣、是這樣嗎、哼、好主意'},
+            holiday: { label: '🎉 節日祝福', texts: 'Happy New Year、恭喜發財、情人節快樂、母親節快樂、父親節快樂、端午安康、中秋節快樂、慶祝雙十、重陽登高、萬聖節快樂、感恩節快樂、聖誕快樂' },
+        };
+
+        const PROMPT_STYLES = {
+            qversion: { label: '🧸 Q 版可愛', desc: '可愛、活潑、2D平面' },
+            realistic: { label: '📸 真人寫實', desc: '細緻、擬真、高質感' },
+            threed: { label: '🧊 3D 立體', desc: 'Blender風格、圓潤、光影' },
+            sketch: { label: '🎨 手繪蠟筆', desc: '線條感、童趣、蠟筆' },
+            anime: { label: '👀 日系動漫', desc: '大眼、賽璐璐上色' }
+        };
+
+        const App = () => {
+            const [copySuccess, setCopySuccess] = useState(false);
+            const [activeTheme, setActiveTheme] = useState('daily');
+            const [activeStyle, setActiveStyle] = useState('qversion');
+            const [includeText, setIncludeText] = useState(false); // 預設為只要圖案
+            
+            const getPromptText = () => {
+                const theme = PROMPT_THEMES[activeTheme];
+                const style = PROMPT_STYLES[activeStyle];
+                
+                let textSection = '';
+                let behaviorInstruction = '';
+                
+                if (includeText) {
+                    textSection = `
+[文字]
+1. 語言：【台灣繁體中文】
+2. 文字內容：【${theme.texts}】
+3. 字型風格：大字、鮮豔、可愛。
+4. 排版：文字佔畫面 3/4，呈現「大字小圖」風格。`;
+                    behaviorInstruction = `角色動作需「直接配合並包含」對應的文字訊息。`;
+                } else {
+                    textSection = `
+[禁止指令 - IMPORTANT NO TEXT]
+1. 🚫 禁止在畫面中出現任何文字、字母、標點符號。
+2. 🚫 畫面中不准出現「${theme.texts}」這些字眼。
+3. 僅呈現角色的純圖像。`;
+                    behaviorInstruction = `【根據以下情境設計 12 種不同動作與表情，但「不要」畫出文字】：
+情境參考：${theme.texts}。
+(例如：對應「早安」就畫起床動作，對應「謝謝」就畫敬禮動作，但畫面上必須完全無字)`;
+                }
+
+                return `貼圖咒語生成指令
+${textSection}
+${behaviorInstruction}
+
+●畫風：【${style.desc}】。
+●背景：純綠色 #00FF00。
+●外框：角色邊緣需有粗白色貼紙外框 (Sticker Style)。
+●角色一致性：12格必須是同一個角色。
+●格式：一張大圖內含 4 × 3 佈局，共 12 張獨立貼圖。總尺寸：1480 × 960 px。每張小圖約 370 × 320 px（自動等比縮放填滿排列）。
+●留白：${includeText ? '正常佈局' : '角色縮小至單格 80% 大小，留出充足空間供後續加字用'}。
+●12格皆需為完全不同的動作與誇張豐富的表情。
+●不可出現 emoji。不可有雜亂背景。${includeText ? '' : '絕對不可出現文字。'}`;
+            };
+
+            const handleCopyPrompt = () => {
+                const text = getPromptText();
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    setCopySuccess(true);
+                    setTimeout(() => setCopySuccess(false), 3000);
+                } catch (err) {
+                    console.error('無法複製', err);
+                }
+                document.body.removeChild(textArea);
+            };
+
+            return (
+                <div className="min-h-screen p-4 md:p-8 max-w-3xl mx-auto pb-20">
+                    <header className="text-center py-6 mb-4">
+                        <h1 className="text-3xl md:text-4xl font-black text-gray-800 flex flex-col md:flex-row items-center justify-center gap-3 mb-2">
+                            <span className="bg-sky-100 p-3 rounded-full text-sky-500"><IconMagic width="40" height="40"/></span>
+                            <span>貼圖咒語小幫手</span>
+                        </h1>
+                    </header>
+                    
+                    <div className="step-card">
+                        <div className="step-title">
+                            <span className="bg-sky-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg">1</span>
+                            選擇模式
+                        </div>
+
+                        <div className="flex gap-4 mb-6">
+                            <button 
+                                onClick={() => setIncludeText(false)}
+                                className={`btn-mode ${!includeText ? 'active' : ''}`}
+                            >
+                                <IconImage /> 只要圖案 (不含字)
+                            </button>
+                            <button 
+                                onClick={() => setIncludeText(true)}
+                                className={`btn-mode ${includeText ? 'active' : ''}`}
+                            >
+                                <IconType /> 加上大字
+                            </button>
+                        </div>
+
+                        <div className="text-lg font-bold text-gray-700 mb-2">
+                            👇 選擇主題：
+                        </div>
+                        <div className="flex gap-3 flex-wrap mb-4">
+                            {Object.entries(PROMPT_THEMES).map(([key, theme]) => (
+                                <button 
+                                    key={key} 
+                                    onClick={() => setActiveTheme(key)} 
+                                    className={`btn-option flex-grow md:flex-grow-0 ${activeTheme === key ? 'btn-active' : 'bg-gray-50 text-gray-600'}`}
+                                >
+                                    {theme.label}
+                                </button>
+                            ))}
+                        </div>
+                        
+                    </div>
+
+                    <div className="step-card">
+                        <div className="step-title">
+                            <span className="bg-sky-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg">2</span>
+                            選擇風格
+                        </div>
+                        <div className="flex gap-3 flex-wrap">
+                            {Object.entries(PROMPT_STYLES).map(([key, style]) => (
+                                <button 
+                                    key={key} 
+                                    onClick={() => setActiveStyle(key)} 
+                                    className={`btn-option flex-grow md:flex-grow-0 ${activeStyle === key ? 'btn-active' : 'bg-gray-50 text-gray-600'}`}
+                                >
+                                    {style.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="step-card" style={{borderColor: '#22c55e', backgroundColor: '#f0fdf4'}}>
+                        <div className="step-title" style={{color: '#15803d'}}>
+                            <span className="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg">3</span>
+                            複製指令
+                        </div>
+                        
+                        <button 
+                            onClick={handleCopyPrompt} 
+                            className={`w-full py-6 rounded-2xl font-bold text-2xl flex items-center justify-center gap-3 transition-all shadow-lg transform active:scale-95
+                                ${copySuccess 
+                                    ? 'bg-green-500 text-white shadow-green-200 ring-4 ring-green-200' 
+                                    : 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-blue-200'
+                                }`}
+                        >
+                            {copySuccess ? <IconCheck className="w-8 h-8"/> : <IconCopy className="w-8 h-8"/>}
+                            {copySuccess ? "複製成功！" : "按這裡複製指令"}
+                        </button>
+
+                        <div className="mt-6">
+                            <div className="text-gray-500 mb-2 font-medium">預覽指令：</div>
+                            <div className="prompt-preview">
+                                {getPromptText()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
