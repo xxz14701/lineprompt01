@@ -202,13 +202,13 @@ ${behaviorInstruction}
                         <div className="flex gap-4 mb-6">
                             
                             <button 
-                                onClick={() => setIncludeText(true)}
+                                onClick={() => setIncludeText(false)}
                                 className={`btn-mode ${includeText ? 'active' : ''}`}
                             >
                                 <IconType /> 加上大字
                             </button>
                             <button 
-                                onClick={() => setIncludeText(false)}
+                                onClick={() => setIncludeText(true)}
                                 className={`btn-mode ${!includeText ? 'active' : ''}`}
                             >
                                 <IconImage /> 只要圖案 (不含字)
@@ -284,6 +284,7 @@ ${behaviorInstruction}
     </script>
 </body>
 </html>
+
 
 
 
