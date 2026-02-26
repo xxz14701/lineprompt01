@@ -108,10 +108,10 @@
         const IconImage = (props) => <Icon {...props}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></Icon>;
 
         const PROMPT_THEMES = {
-            daily: { label: '🏠 日常問候', texts: '早安、謝謝、OK、哈哈、晚安、讚、好棒、吃飽沒、Hi、沒問題、好喔、生日快樂' },
-            greet: { label: '👋 打招呼', texts: '收到、平安、日安、路上小心、辛苦了、注意保暖、記得帶傘、 掰掰、愛你、感謝你、拜託、早點休息'},
-            response: { label: '💬 回應用語', texts: '加油、你可以的、一定沒問題的、我覺得可以、我覺得不行、我很厲害吧、什麼什麼什麼、求求你啦、不用客氣、是這樣嗎、哼、好主意'},
-            holiday: { label: '🎉 節日祝福', texts: 'Happy New Year、恭喜發財、情人節快樂、母親節快樂、父親節快樂、端午安康、中秋節快樂、慶祝雙十、重陽登高、萬聖節快樂、感恩節快樂、聖誕快樂' },
+            daily: { label: '🏠 日常問候', texts: '早安、謝謝、OK、哈哈、晚安、讚、好棒、吃飽沒、Hi、沒問題、好喔、生日快樂、收到、愛你喔、加油、生氣' },
+            greet: { label: '👋 打招呼', texts: '收到、平安、日安、路上小心、辛苦了、注意保暖、記得帶傘、 掰掰、愛你、感謝你、拜託、早點休息、你真棒、感恩、哼、生氣'},
+            response: { label: '💬 回應用語', texts: '加油、你可以的、一定沒問題的、我覺得可以、我覺得不行、我很厲害吧、什麼什麼什麼、求求你啦、不用客氣、是這樣嗎、哼、好主意、不好說、感恩、萬事拜託、有我在'},
+            holiday: { label: '🎉 節日祝福', texts: 'Happy New Year、恭喜發財、情人節快樂、母親節快樂、父親節快樂、端午安康、中秋節快樂、慶祝雙十、重陽登高、萬聖節快樂、感恩節快樂、聖誕快樂、兒童節快樂、元宵節快樂、婦女節快樂、教師節快樂' },
         };
 
         const PROMPT_STYLES = {
@@ -119,7 +119,7 @@
             realistic: { label: '📸 真人寫實', desc: '細緻、擬真、高質感' },
             threed: { label: '🧊 3D 立體', desc: 'Blender風格、圓潤、光影' },
             sketch: { label: '🎨 手繪蠟筆', desc: '線條感、童趣、蠟筆' },
-            anime: { label: '👀 日系動漫', desc: '大眼、賽璐璐上色' }
+            
         };
 
         const App = () => {
@@ -149,7 +149,7 @@
 1. 🚫 禁止在畫面中出現任何文字、字母、標點符號。
 2. 🚫 畫面中不准出現「${theme.texts}」這些字眼。
 3. 僅呈現角色的純圖像。`;
-                    behaviorInstruction = `【根據以下情境設計 12 種不同動作與表情，但「不要」畫出文字】：
+                    behaviorInstruction = `【根據以下情境設計 16 種不同動作與表情，但「不要」畫出文字】：
 情境參考：${theme.texts}。
 (例如：對應「早安」就畫起床動作，對應「謝謝」就畫敬禮動作，但畫面上必須完全無字)`;
                 }
@@ -161,10 +161,10 @@ ${behaviorInstruction}
 ●畫風：【${style.desc}】。
 ●背景：純綠色 #00FF00。
 ●外框：角色邊緣需有粗白色貼紙外框 (Sticker Style)。
-●角色一致性：12格必須是同一個角色。
-●格式：一張大圖內含 4 × 3 佈局，共 12 張獨立貼圖。總尺寸：1480 × 960 px。每張小圖約 370 × 320 px（自動等比縮放填滿排列）。
+●角色一致性：16格必須是同一個角色。
+●格式：一張大圖內含 4 × 4 佈局，共 16 張獨立貼圖。總尺寸：1480 × 1280 px。每張小圖約 370 × 320 px（自動等比縮放填滿排列）。
 ●留白：${includeText ? '正常佈局' : '角色縮小至單格 80% 大小，留出充足空間供後續加字用'}。
-●12格皆需為完全不同的動作與誇張豐富的表情。
+●16格皆需為完全不同的動作與誇張豐富的表情。
 ●不可出現 emoji。不可有雜亂背景。${includeText ? '' : '絕對不可出現文字。'}`;
             };
 
@@ -200,17 +200,18 @@ ${behaviorInstruction}
                         </div>
 
                         <div className="flex gap-4 mb-6">
-                            <button 
-                                onClick={() => setIncludeText(false)}
-                                className={`btn-mode ${!includeText ? 'active' : ''}`}
-                            >
-                                <IconImage /> 只要圖案 (不含字)
-                            </button>
+                            
                             <button 
                                 onClick={() => setIncludeText(true)}
                                 className={`btn-mode ${includeText ? 'active' : ''}`}
                             >
                                 <IconType /> 加上大字
+                            </button>
+                            <button 
+                                onClick={() => setIncludeText(false)}
+                                className={`btn-mode ${!includeText ? 'active' : ''}`}
+                            >
+                                <IconImage /> 只要圖案 (不含字)
                             </button>
                         </div>
 
@@ -283,6 +284,7 @@ ${behaviorInstruction}
     </script>
 </body>
 </html>
+
 
 
 
