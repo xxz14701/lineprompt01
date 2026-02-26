@@ -126,7 +126,7 @@
             const [copySuccess, setCopySuccess] = useState(false);
             const [activeTheme, setActiveTheme] = useState('daily');
             const [activeStyle, setActiveStyle] = useState('qversion');
-            const [includeText, setIncludeText] = useState(true); // 預設為只要圖案
+            const [includeText, setIncludeText] = useState(true); // 預設為加字
             
             const getPromptText = () => {
                 const theme = PROMPT_THEMES[activeTheme];
@@ -284,6 +284,7 @@ ${behaviorInstruction}
     </script>
 </body>
 </html>
+
 
 
 
